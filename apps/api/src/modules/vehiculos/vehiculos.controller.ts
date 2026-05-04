@@ -1,0 +1,69 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+  ParseIntPipe,
+  Query,
+} from '@nestjs/common';
+import { VehiculosService } from './vehiculos.service';
+import { CreateVehiculoDto } from './dto/create-vehiculo.dto';
+import { UpdateVehiculoDto } from './dto/update-vehiculo.dto';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { Role } from '../../common/enums/roles.enum';
+import { Vehiculo } from './entities/vehiculo.entity';
+import { PaginationDto } from '../cooperadores/dto/pagination.dto';
+
+@Controller('vehiculos')
+@UseGuards(JwtAuthGuard, RolesGuard)
+export class VehiculosController {
+  constructor(private readonly vehiculosService: VehiculosService) {}
+
+  @Post()
+  @Roles(Role.ADMIN, Role.ENCARGADO, Role.OPERADOR)
+  create(@Body() createVehiculoDto: CreateVehiculoDto): Promise<Vehiculo> {
+    return this.vehiculosService.create(createVehiculoDto);
+  }
+
+  @Get()
+  @Roles(Role.ADMIN, Role.ENCARGADO, Role.OPERADOR)
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.vehiculosService.findAll(paginationDto);
+  }
+
+  @Get('activos')
+  @Roles(Role.ADMIN, Role.ENCARGADO, Role.OPERADOR)
+  findAllActive(): Promise<Vehiculo[]> {
+    return this.vehiculosService.findAllActive();
+  }
+
+  @Get(':id')
+  @Roles(Role.ADMIN, Role.ENCARGADO, Role.OPERADOR)
+  findOne(@Param('id', ParseIntPipe) id: number): Promise<Vehiculo> {
+    return this.vehiculosService.findOne(id);
+  }
+
+  @Patch(':id')
+  @Roles(Role.ADMIN, Role.ENCARGADO, Role.OPERADOR)
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateVehiculoDto: UpdateVehiculoDto,
+  ): Promise<Vehiculo> {
+    return this.vehiculosService.update(id, updateVehiculoDto);
+  }
+
+  @Delete(':id')
+  @Roles(Role.ADMIN, Role.ENCARGADO, Role.OPERADOR)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return this.vehiculosService.remove(id);
+  }
+}

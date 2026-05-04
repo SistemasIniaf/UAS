@@ -1,0 +1,33 @@
+import { Role } from '../enums/roles.enum';
+
+export interface JwtPayload {
+  sub: number;
+  usuario: string;
+  rol: Role;
+  id_unidad?: number;
+}
+
+export interface AuthenticatedUser {
+  id_usuario: number;
+  usuario: string;
+  rol: Role;
+  id_unidad?: number;
+}
+
+export interface LoginResponse {
+  access_token: string;
+  refresh_token: string;
+  usuario: {
+    id_usuario: number;
+    nombre: string;
+    usuario: string;
+    rol: Role;
+    id_unidad?: number;
+    nombre_unidad?: string;
+  };
+}
+
+export interface RefreshTokenResponse {
+  access_token: string;
+  refresh_token: string;
+}
