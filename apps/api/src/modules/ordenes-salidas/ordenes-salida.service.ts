@@ -10,7 +10,7 @@ import { DetalleOrdenSalida } from './entities/detalle-orden-salida.entity';
 import { CreateOrdenSalidaDto } from './dto/create-orden-salida.dto';
 import { UpdateOrdenSalidaDto } from './dto/update-orden-salida.dto';
 import { LoteProduccion } from '../lotes-produccion/entities/lote-produccion.entity';
-import { MovimientoLote } from '../movimientos-lote/entities/movimiento-lote.entity'; // ‚úÖ AGREGAR
+import { MovimientoLote } from '../movimientos-lote/entities/movimiento-lote.entity'; // ? AGREGAR
 import { PaginationDto } from '../cooperadores/dto/pagination.dto';
 
 @Injectable()
@@ -36,9 +36,11 @@ export class OrdenesSalidaService {
     await queryRunner.startTransaction();
 
     try {
-      const numeroOrden = await this.generarNumeroOrden();
+      const numeroOrden = await this.generarNumeroOrden(
+       createOrdenSalidaDto.id_unidad
+      );
 
-      // Validaciones previas (c√≥digo existente)
+      // Validaciones previas (cÛdigo existente)
       for (const detalle of createOrdenSalidaDto.detalles) {
         const lote = await this.loteProduccionRepository.findOne({
           where: { id_lote_produccion: detalle.id_lote_produccion },
@@ -107,13 +109,13 @@ export class OrdenesSalidaService {
           where: { id_lote_produccion: detalleDto.id_lote_produccion },
         });
 
-        // ‚úÖ 3. REGISTRAR MOVIMIENTO DE SALIDA (NUEVO C√ìDIGO AQU√ç)
+        // ? 3. REGISTRAR MOVIMIENTO DE SALIDA (NUEVO C”DIGO AQUÕ)
         const movimiento = queryRunner.manager.create(MovimientoLote, {
           id_lote_produccion: lote!.id_lote_produccion,
           tipo_movimiento: 'salida',
           cantidad_unidades: detalleDto.cantidad_unidades,
           kg_movidos: totalKg,
-          // Saldos DESPU√âS del movimiento
+          // Saldos DESPU…S del movimiento
           saldo_unidades:
             lote!.cantidad_unidades - detalleDto.cantidad_unidades,
           saldo_kg: lote!.total_kg - totalKg,
@@ -124,9 +126,9 @@ export class OrdenesSalidaService {
         });
 
         await queryRunner.manager.save(movimiento);
-        // ‚úÖ FIN DEL C√ìDIGO NUEVO
+        // ? FIN DEL C”DIGO NUEVO
 
-        // 4. Actualizar el lote (c√≥digo existente)
+        // 4. Actualizar el lote (cÛdigo existente)
         lote!.cantidad_unidades -= detalleDto.cantidad_unidades;
         lote!.total_kg -= totalKg;
 
@@ -149,7 +151,7 @@ export class OrdenesSalidaService {
     }
   }
 
-  // ‚úÖ NUEVO M√âTODO: Consultar movimientos de una orden
+  // ? NUEVO M…TODO: Consultar movimientos de una orden
   async getMovimientosOrden(idOrden: number): Promise<MovimientoLote[]> {
     return await this.movimientoLoteRepository.find({
       where: { id_orden_salida: idOrden },
@@ -158,7 +160,7 @@ export class OrdenesSalidaService {
     });
   }
 
-  // Resto de m√©todos existentes sin cambios...
+  // Resto de mÈtodos existentes sin cambios...
   async findAll(
     rol: string,
     idUnidadUsuario?: number,
@@ -406,7 +408,7 @@ export class OrdenesSalidaService {
       'cancelado',
     ];
     if (!estadosValidos.includes(nuevoEstado)) {
-      throw new BadRequestException('Estado no v√°lido');
+      throw new BadRequestException('Estado no v·lido');
     }
 
     orden.estado = nuevoEstado;
@@ -425,11 +427,26 @@ export class OrdenesSalidaService {
     await this.ordenSalidaRepository.remove(orden);
   }
 
-  private async generarNumeroOrden(): Promise<string> {
-    const count = await this.ordenSalidaRepository.count();
-    const secuencial = String(count + 1).padStart(5, '0');
-    return secuencial;
+  private async generarNumeroOrden(idUnidad: number): Promise<string> {
+  // Obtener la ˙ltima orden de salida DE ESTA UNIDAD
+  const ultimaOrden = await this.ordenSalidaRepository.findOne({
+    where: { id_unidad: idUnidad },
+    order: { id_orden_salida: 'DESC' }, // O el nombre de tu PK
+  });
+ 
+  let secuencial = 1;
+  
+  // Si existe una orden anterior en ESTA unidad, extraer n˙mero y sumar 1
+  if (ultimaOrden && ultimaOrden.numero_orden) {
+    const numeroActual = parseInt(ultimaOrden.numero_orden, 10);
+    if (!isNaN(numeroActual)) {
+      secuencial = numeroActual + 1;
+    }
   }
+ 
+  // Retornar formato: "00001", "00002", etc.
+  return String(secuencial).padStart(5, '0');
+}
 
   async getEstadisticas(idUnidad?: number): Promise<any> {
     const queryBuilder = this.ordenSalidaRepository

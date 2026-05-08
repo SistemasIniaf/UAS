@@ -3,11 +3,11 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 
 export const databaseConfig = registerAs('database', () => ({
   type: 'mysql',
-  host: process.env.DB_HOST ?? '127.0.0.1',
+  host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT!, 10) || 3306,
-  username: process.env.DB_USER ?? 'root',
-  password: process.env.DB_PASSWORD ?? '',
-  database: process.env.DB_DATABASE ?? 'semillas_db',
+  username: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   synchronize: process.env.NODE_ENV === 'development',
   logging: process.env.NODE_ENV === 'development',
@@ -18,11 +18,11 @@ export const databaseConfig = registerAs('database', () => ({
 // DataSource para migraciones
 export const AppDataSource = new DataSource({
   type: 'mysql',
-  host: process.env.DB_HOST ?? '127.0.0.1',
+  host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT!, 10) || 3306,
-  username: process.env.DB_USER ?? 'root',
-  password: process.env.DB_PASSWORD ?? '',
-  database: process.env.DB_DATABASE ?? 'semillas_db',
+  username: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
   synchronize: false,

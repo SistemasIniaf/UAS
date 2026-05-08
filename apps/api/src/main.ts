@@ -2,11 +2,29 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
+import * as path from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const configService = app.get(ConfigService);
+
+  console.log('🔍 Variables cargadas:');
+console.log('PORT:', configService.get('PORT'));
+console.log('NODE_ENV:', configService.get('NODE_ENV'));
+console.log('API_PREFIX:', configService.get('API_PREFIX'));
+console.log('JWT_SECRET:', configService.get('JWT_SECRET') ? '✅ cargado' : '❌ no encontrado');
+console.log('DB_HOST:', configService.get('DB_HOST'));
+console.log('DB_DATABASE:', configService.get('DB_DATABASE'));
+
+// 👇 ESTE ES EL IMPORTANTE
+console.log('DB_PASSWORD:', configService.get('DB_PASSWORD'));
+
+// opcional (más seguro, sin mostrar el valor real)
+console.log(
+  'DB_PASSWORD existe:',
+  configService.get('DB_PASSWORD') ? '✅ sí' : '❌ no'
+);
 
   // Global prefix para todas las rutas
   const apiPrefix = configService.get<string>('API_PREFIX') || 'api/v1';

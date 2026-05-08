@@ -22,7 +22,7 @@ export class OrdenSalida {
   @PrimaryGeneratedColumn()
   id_orden_salida: number;
 
-  @Column({ unique: true, length: 50 })
+  @Column({ length: 50 })
   numero_orden: string;
 
   @Column()

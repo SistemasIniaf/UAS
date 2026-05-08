@@ -10,7 +10,7 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
-    "db:up": "docker-compose up -d",
+    "db:up": "docker compose up -d",
     "db:down": "docker-compose down",
     "db:logs": "docker-compose logs -f postgres",
     "db:pgadmin": "docker-compose logs -f pgadmin",

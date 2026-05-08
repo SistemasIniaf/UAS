@@ -389,12 +389,21 @@ export class OrdenesIngresoService {
   }
 
   private async generarNumeroOrden(idUnidad: number): Promise<string> {
-    const count = await this.ordenIngresoRepository.count({
-      where: {id_unidad: idUnidad}
-    });
-    const secuencial = String(count + 1).padStart(5, '0');
-    return secuencial;
+  const ultimaOrden = await this.ordenIngresoRepository.findOne({
+    where: { id_unidad: idUnidad },
+    order: { id_orden_ingreso: 'DESC' },
+  });
+
+  let secuencial = 1;
+  if (ultimaOrden && ultimaOrden.numero_orden) {
+    const numeroActual = parseInt(ultimaOrden.numero_orden, 10);
+    if (!isNaN(numeroActual)) {
+      secuencial = numeroActual + 1;
+    }
   }
+
+  return String(secuencial).padStart(5, '0');
+}
 
   async getEstadisticas(
     idUnidad?: number,
